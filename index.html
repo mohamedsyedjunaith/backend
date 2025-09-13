@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin: 20px; }
+    #tasks { margin-top: 20px; }
+    .task { padding: 8px; border: 1px solid #ccc; margin: 5px; display: flex; justify-content: space-between; }
+    button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>List</h1>
+  <input id="taskInput" placeholder="Enter task" />
+  <button onclick="addTask()">Add Task</button>
+  
+  <div id="tasks"></div>
+
+  <script>
+    const API_URL = "http://localhost:5500/tasks";
+
+    async function loadTasks() {
+      const res = await fetch(API_URL);
+      const tasks = await res.json();
+      document.getElementById("tasks").innerHTML = tasks.map(task =>
+        `<div class="task">
+          ${task.text}
+          <button onclick="deleteTask(${task.id})">❌</button>
+        </div>`
+      ).join("");
+    }
+
+    async function addTask() {
+      const text = document.getElementById("taskInput").value;
+      if (!text) return;
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      document.getElementById("taskInput").value = "";
+      loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
